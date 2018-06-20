@@ -1,101 +1,75 @@
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'gameDiv');
+var game = new Phaser.Game(120, 80, Phaser.CANVAS, 'gameDiv');
 
+var level = [[0,0,0],
+			 [0,0,0]];
+var floorTiles;
 var cursors;
-var bullets;
-var bulletTime = 0;
-var fireButton;
-var enemies;
+var playerX = 40;
+var playerY = 40;
+var buttonDown = false;
 
 var mainState = {
 	preload:function(){
-		game.load.image('floorTile', "assets/floorTile.png");
-		game.load.image('player', "assets/spaceship.png");
-		game.load.image('bullet', "assets/laserBeam.png");
-		game.load.image('asteroid', "assets/asteroid.png");
+		game.load.image('floor', "assets/floorTile.png");
+		game.load.image('player', "assets/robot.png");
 
 	},
 
 	create:function(){
 		this.game.scale.pageAlignHorizontally = true;this.game.scale.pageAlignVertically = true;this.game.scale.refresh();
-		mapLevel = game.add.tileSprite(0, 0, 800, 600, "floorTile");
+/*		mapLevel = game.add.tileSprite(0, 0, 40, 40, "floorTile");
+*/
+		floorTiles = game.add.group();
+		floorTiles.enableBody = true;
+		floorTiles.createMultiple(6, 'floor');
+		floorTiles.setAll('anchor.x', 0);
+		floorTiles.setAll('anchor.y', 0);
 
-		player = game.add.sprite(game.world.centerX - 300, game.world.centerY, 'player');
+		drawLevel();
+
+		player = game.add.sprite(playerX, playerY, 'player');
 		game.physics.enable(player, Phaser.Physics.ARCADE);
+		player.body.collideWorldBounds = true;
 
 		cursors = game.input.keyboard.createCursorKeys();
-
-		bullets = game.add.group();
-		bullets.enableBody = true;
-		bullets.physicsBodyType = Phaser.Physics.ARCADE;
-		bullets.createMultiple(30, 'bullet');
-		bullets.setAll('anchor.x', 0.5);
-		bullets.setAll('anchor.y', 1);
-		bullets.setAll('outOfBoundsKill', true);
-		bullets.setAll('checkWorldBounds', true);
-
-		fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-		asteroids = game.add.group();
-		asteroids.enableBody = true;
-		asteroids.physicsBodyType = Phaser.Physics.ARCADE;
-
-		createAsteroids();
 
 	},
 
 	update:function(){
-		game.physics.arcade.overlap(bullets,asteroids,collisionHandler,null,this);
 
 		player.body.velocity.y = 0;
 
-		if(cursors.up.isDown){
-			player.body.velocity.y = -350;
+		if(cursors.up.isDown && !buttonDown){
+			player.body.y -= 40;
+			buttonDown = true;
 		}
-		if(cursors.down.isDown){
-			player.body.velocity.y = 350;
+		if(cursors.down.isDown && !buttonDown){
+			player.body.y += 40;
+			buttonDown = true;
 		}
-		if(fireButton.isDown){
-			fireBullet();
+		if(cursors.left.isDown && !buttonDown){
+			player.body.x -=40;
+			buttonDown = true;
+		}
+		if(cursors.right.isDown && !buttonDown){
+			player.body.x += 40;
+			buttonDown = true;
+		}
+
+		if(cursors.up.isUp && cursors.down.isUp && cursors.left.isUp && cursors.right.isUp){
+			buttonDown = false;
 		}
 
 	}
 
 }
 
-function fireBullet(){
-	if(game.time.now > bulletTime){
-		bullet = bullets.getFirstExists(false);
-		if(bullet){
-			bullet.reset(player.x + player.width, player.y + player.height/2);
-			bullet.body.velocity.x = 400;
-			bulletTime = game.time.now + 200;
+function drawLevel(){
+	for(var i = 0; i < 3; i++){
+		for(var j = 0; j < 2; j++){
+			var floorTile = floorTiles.create(i*40, j*40, 'floor');
 		}
 	}
-}
-
-function createAsteroids(){
-	for(var y = 0; y < 6; y++){
-		for(var x = 0; x < 3; x++){
-			var asteroid = asteroids.create(x*60, y*75, 'asteroid');
-		}
-	}
-	
-	asteroids.x = 600;
-	asteroids.y = 50;
-	
-	var tween = game.add.tween(asteroids).to({y:150},2000,Phaser.Easing.Linear.None,true,0,1000,true);
-
-	tween.onLoop.add(approach,this);
-
-}
-
-function approach(){
-	asteroids.x += -10;
-}
-
-function collisionHandler(bullet,asteroid){
-	bullet.kill();
-	asteroid.kill();
 }
 
 game.state.add('mainState', mainState);
