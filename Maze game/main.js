@@ -1,8 +1,5 @@
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'gameDiv');
 
-/*var level = [[1,1,1],
-			 [0,0,0],
-			 [1,1,1]];*/
 var level = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -89,18 +86,6 @@ var mainState = {
 }
 
 function drawLevel(){
-/*	for(var i = 0; i < 3; i++){
-		for(var j = 0; j < 2; j++){
-			var floorTile = floorTiles.create(i*40, j*40, 'floor');
-		}
-	}*/
-/*	for(var i = 0; i < 2; i++){
-		for(var j = 0; j < 3; j++){
-			if(level)
-			var floorTile = floorTiles.create(i*40, j*40, 'floor');
-			var wallTile = wallTiles.create(i*40, j*40, 'wall');
-		}
-	}*/
 	for(var i = 0; i < level.length; i++){
 		for(var j = 0; j < level[i].length; j++){
 			if(level[i][j] == 0){
