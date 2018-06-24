@@ -1,19 +1,19 @@
 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'gameDiv');
 
 var level = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
-			 [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 			 [1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1],
+			 [1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,2,0,0,0,1],
+			 [1,0,1,4,1,0,1,1,1,1,1,0,1,0,1,0,1,1,0,1],
+			 [1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,1,1,0,1],
+			 [1,0,0,0,0,0,1,1,1,1,1,0,1,0,1,0,0,0,0,1],
+			 [1,0,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,0,1],
+			 [1,0,1,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,0,1],
+			 [1,0,1,0,1,0,0,0,0,0,1,1,1,1,0,1,0,1,0,1],
+			 [1,0,1,0,1,1,1,1,1,0,0,0,0,1,0,1,0,1,0,1],
+			 [1,0,1,0,1,0,0,0,1,1,0,1,0,1,0,1,3,1,0,1],
+			 [1,0,1,0,1,1,1,0,0,1,0,1,1,1,0,1,1,1,0,1],
+			 [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
 			 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
 var floorTiles;
 var wallTiles;
@@ -22,6 +22,10 @@ var playerX = 2;
 var playerY = 2;
 var buttonDown = false;
 var hasKey = false;
+var bmd;
+var fogCircle;
+var fringe;
+var cluetext;
 var winText;
 
 var mainState = {
@@ -53,7 +57,22 @@ var mainState = {
 		game.physics.enable(player, Phaser.Physics.ARCADE);
 		player.body.collideWorldBounds = true;
 
+		fogCircle = new Phaser.Circle(160, 160, 160);
+
+		fringe = 20;
+
+		bmd = game.make.bitmapData(800, 600);
+
+		updateFogOfWar();
+
+		var fogSprite = bmd.addToWorld();
+
+		fogSprite.fixedToCamera = true;
+
 		cursors = game.input.keyboard.createCursorKeys();
+
+		clueText = game.add.text(game.world.centerX,game.world.top,'Find the keycard and escape.',{font: '32px Arial',fill : '#ffffff'});
+		clueText.anchor.setTo(0.5, 0);
 
 		winText = game.add.text(game.world.centerX,game.world.centerY,'You Escaped!',{font: '32px Arial',fill : '#ffffff'});
 		winText.anchor.setTo(0.5);
@@ -61,6 +80,9 @@ var mainState = {
 	},
 
 	update:function(){
+
+		fogCircle.x = player.x + player.width/2;
+		fogCircle.y = player.y + player.height/2;
 
 		if(cursors.up.isDown && !buttonDown){
 			if (isMovable(0,-1)){
@@ -91,6 +113,8 @@ var mainState = {
 			}
 		}
 
+		updateFogOfWar();
+
 		if(cursors.up.isUp && cursors.down.isUp && cursors.left.isUp && cursors.right.isUp){
 			buttonDown = false;
 		}
@@ -98,11 +122,17 @@ var mainState = {
 		if(!hasKey && level[playerY][playerX] == 4){
 			hasKey = true;
 			key.kill();
+			clueText.text = "You have the keycard. Find the exit."
 		}
 
-		if(level[playerY][playerX] == 3 && hasKey){
-			player.kill();
-			winText.visible = true;
+		if(level[playerY][playerX] == 3){
+			if(hasKey){
+				player.kill();
+				clueText.visible = false;
+				winText.visible = true;
+			} else {
+				clueText.text = "You must find the keycard.";
+			}
 		}
 
 	}
@@ -141,6 +171,25 @@ function isMovable(deltaX, deltaY){
 
 function movePlayer(){
 	var playerTween = game.add.tween(player).to({x:playerX*40, y:playerY*40},250,Phaser.Easing.Linear.None,true,0,0,false);
+}
+
+function updateFogOfWar(){
+	var gradient = bmd.context.createRadialGradient(
+		fogCircle.x - game.camera.x,
+		fogCircle.y - game.camera.y,
+		fogCircle.radius,
+		fogCircle.x - game.camera.x,
+		fogCircle.y - game.camera.y,
+		fogCircle.radius - fringe
+	);
+
+	gradient.addColorStop(0, 'rgba(0,0,0,1');
+	gradient.addColorStop(0.4, 'rgba(0,0,0,0.5');
+	gradient.addColorStop(1, 'rgba(0,0,0,0');
+
+	bmd.clear();
+	bmd.context.fillStyle = gradient;
+	bmd.context.fillRect(0, 0, 800, 600);
 }
 
 game.state.add('mainState', mainState);
