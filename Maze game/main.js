@@ -1,8 +1,22 @@
-var game = new Phaser.Game(120, 80, Phaser.CANVAS, 'gameDiv');
+var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'gameDiv');
 
-var level = [[0,0,0],
-			 [0,0,0]];
+var level = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+			 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];
 var floorTiles;
+var wallTiles;
 var cursors;
 var playerX = 40;
 var playerY = 40;
@@ -11,6 +25,7 @@ var buttonDown = false;
 var mainState = {
 	preload:function(){
 		game.load.image('floor', "assets/floorTile.png");
+		game.load.image('wall', "assets/wallTile.png");
 		game.load.image('player', "assets/robot.png");
 
 	},
@@ -24,6 +39,12 @@ var mainState = {
 		floorTiles.createMultiple(6, 'floor');
 		floorTiles.setAll('anchor.x', 0);
 		floorTiles.setAll('anchor.y', 0);
+
+		wallTiles = game.add.group();
+		wallTiles.enableBody = true;
+		wallTiles.createMultiple(6, 'wall');
+		wallTiles.setAll('anchor.x', 0);
+		wallTiles.setAll('anchor.y', 0);
 
 		drawLevel();
 
@@ -65,9 +86,13 @@ var mainState = {
 }
 
 function drawLevel(){
-	for(var i = 0; i < 3; i++){
-		for(var j = 0; j < 2; j++){
-			var floorTile = floorTiles.create(i*40, j*40, 'floor');
+	for(var i = 0; i < level.length; i++){
+		for(var j = 0; j < level[i].length; j++){
+			if(level[i][j] == 0){
+				var floorTile = floorTiles.create(j*40, i*40, 'floor');
+			} else if (level[i][j] == 1){
+				var wallTile = wallTiles.create(j*40, i*40, 'wall');
+			}
 		}
 	}
 }
