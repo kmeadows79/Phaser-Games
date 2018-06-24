@@ -2,7 +2,7 @@ var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'gameDiv');
 
 var level = [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-			 [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
+			 [1,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
 			 [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 			 [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 			 [1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1],
@@ -21,6 +21,7 @@ var cursors;
 var playerX = 2;
 var playerY = 2;
 var buttonDown = false;
+var hasKey = false;
 var winText;
 
 var mainState = {
@@ -29,6 +30,7 @@ var mainState = {
 		game.load.image('wall', "assets/wallTile.png");
 		game.load.image('player', "assets/robot.png");
 		game.load.image('exit', "assets/exit.png");
+		game.load.image('key', "assets/key.png");
 
 	},
 
@@ -93,8 +95,14 @@ var mainState = {
 			buttonDown = false;
 		}
 
-		if(level[playerY][playerX] == 3){
-				winText.visible = true;
+		if(!hasKey && level[playerY][playerX] == 4){
+			hasKey = true;
+			key.kill();
+		}
+
+		if(level[playerY][playerX] == 3 && hasKey){
+			player.kill();
+			winText.visible = true;
 		}
 
 	}
@@ -115,6 +123,9 @@ function drawLevel(){
 			} else if (level[i][j] == 3){
 				var floorTile = floorTiles.create(j*40, i*40, 'floor');
 				exit = game.add.sprite(j*40, i*40, 'exit');
+			} else if (level[i][j] == 4){
+				var floorTile = floorTiles.create(j*40, i*40, 'floor');
+				key = game.add.sprite(j*40, i*40, 'key');
 			}
 		}
 	}
